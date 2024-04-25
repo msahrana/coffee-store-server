@@ -20,9 +20,10 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // await client.connect();
-
     const coffeeCollection = client.db("coffee_Db").collection("coffee");
+    const userCollection = client.db("coffee_Db").collection("user");
+
+    /* coffee api */
 
     app.get("/coffee", async (req, res) => {
       const result = await coffeeCollection.find().toArray();
@@ -69,7 +70,39 @@ async function run() {
       res.send(result);
     });
 
-    // await client.db("admin").command({ping: 1});
+    /* user api */
+
+    app.get("/user", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/user", async (req, res) => {
+      const newUser = req.body;
+      const result = await userCollection.insertOne(newUser);
+      res.send(result);
+    });
+
+    app.patch("/user", async (req, res) => {
+      const user = req.body;
+      const filter = {email: user.email};
+      const updateDoc = {
+        $set: {
+          name: user.name,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.delete("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /* for pinged */
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
